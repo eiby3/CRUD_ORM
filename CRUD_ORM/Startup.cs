@@ -1,5 +1,4 @@
 using CRUD_ORM.Data;
-using CRUD_ORM.logs;
 using CRUD_ORM.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,15 +27,15 @@ namespace CRUD_ORM
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDistributedMemoryCache();
-            services.AddSession();
+            
+            
             services.AddControllersWithViews();
             services.AddDbContext<ClienteContext>(option => option.UseSqlServer(Configuration.GetConnectionString("Connection")));
             services.Configure<BibliotecaMongoSettings>(Configuration.GetSection("MongoConnection"));
             services.AddSingleton<IBibliotecaMongoSettings>(sp =>
                 sp.GetRequiredService<IOptions<BibliotecaMongoSettings>>().Value);
 
-            services.AddScoped<livroLog>();
+           
 
 
         }
@@ -61,7 +60,7 @@ namespace CRUD_ORM
 
             app.UseAuthorization();
 
-            app.UseSession();
+            
 
             app.UseEndpoints(endpoints =>
             {

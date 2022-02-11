@@ -9,7 +9,6 @@ using CRUD_ORM.Data;
 using CRUD_ORM.Models;
 using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
-using CRUD_ORM.logs;
 
 namespace CRUD_ORM.Controllers
 {
@@ -17,20 +16,20 @@ namespace CRUD_ORM.Controllers
     {
         private readonly ClienteContext _context;
         private readonly IConfiguration _configuration;
-        private readonly livroLog _livroLog;
 
-        public LivroModelsController(ClienteContext context, IConfiguration configuration, livroLog livroLog)
+
+        public LivroModelsController(ClienteContext context)
         {
             _context = context;
-            _configuration = configuration;
-            _livroLog = livroLog;
         }
 
         // GET: LivroModels
         public async Task<IActionResult> Index()
         {
             var clienteContext = _context.Livros.Include(l => l.Categoria);
+            LivroModel livro = _context.Livros.Include(c => c.Categoria).First();
             return View(await clienteContext.ToListAsync());
+            
         }
 
         // GET: LivroModels/Details/5
@@ -71,7 +70,7 @@ namespace CRUD_ORM.Controllers
                 _context.Add(livroModel);
                 await _context.SaveChangesAsync();
                
-                await _livroLog.Create(livroModel);
+               
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Nome", livroModel.CategoriaId);
@@ -97,7 +96,7 @@ namespace CRUD_ORM.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
             livroAntigo.Categoria.Nome =  livroModel.Categoria.Nome;
             
-            AdicionarSessao(livroAntigo);
+            
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Nome", livroModel.CategoriaId);
             return View(livroModel);
         }
@@ -121,8 +120,8 @@ namespace CRUD_ORM.Controllers
                     _context.Update(livroModel);
                     await _context.SaveChangesAsync();
 
-                    LivroModel livroAntigo = ResgatarDaSessao();
-                    await _livroLog.Update(livroModel, livroAntigo);
+                    
+                   
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -170,7 +169,7 @@ namespace CRUD_ORM.Controllers
             _context.Livros.Remove(livroModel);
             await _context.SaveChangesAsync();
 
-            await _livroLog.Delete(livroModel);
+           
             return RedirectToAction(nameof(Index));
         }
 
@@ -178,16 +177,7 @@ namespace CRUD_ORM.Controllers
         {
             return _context.Livros.Any(e => e.Id == id);
         }
-        private void AdicionarSessao(LivroModel livro)
-        {
-            LivroModel livroAntigo = livro;
-            HttpContext.Session.SetarNaSessao("livro", livroAntigo);
-        }
-        private LivroModel ResgatarDaSessao()
-        {
-            LivroModel livro = HttpContext.Session.RecuperarDaSessao<LivroModel>("livro");            
-            return livro;
-        }
+        
 
     }
 }

@@ -21,7 +21,7 @@ namespace CRUD_ORM.Controllers
 
         // GET: ClienteModels
         public async Task<IActionResult> Index()
-        {
+        {            
             return View(await _context.Clientes.ToListAsync());
         }
 
