@@ -49,9 +49,13 @@ namespace CRUD_ORM.Controllers
         // GET: EmprestimoModels/Create
         public IActionResult Create()
         {
+            EmprestimoExistente emprestimoExistente = new EmprestimoExistente()
+            {
+                Emprestado = DateTime.Now
+            };
             ViewData["ClienteId"] = new SelectList(_context.Clientes, "Id", "Nome");
             ViewData["LivroId"] = new SelectList(_context.Livros, "Id", "Nome");
-            return View();
+            return View(emprestimoExistente);
         }
 
         // POST: EmprestimoModels/Create
@@ -61,15 +65,49 @@ namespace CRUD_ORM.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,LivroId,ClienteId,Emprestado,PrevisaoDevolucao,Devolucao")] EmprestimoModel emprestimoModel)
         {
-            if (ModelState.IsValid)
+            EmprestimoExistente emprestimoExistente = new EmprestimoExistente()
+            {
+                Id = emprestimoModel.Id,
+                Cliente = emprestimoModel.Cliente,
+                ClienteId = emprestimoModel.ClienteId,
+                Devolucao = emprestimoModel.Devolucao,
+                Emprestado = emprestimoModel.Emprestado,
+                Livro = emprestimoModel.Livro,
+                LivroId = emprestimoModel.LivroId,
+                PrevisaoDevolucao = emprestimoModel.PrevisaoDevolucao,
+                EmprestimoExiste = EmprestimoClienteExists(emprestimoModel)
+            };
+            var teste = emprestimoExistente;
+            if (ModelState.IsValid && !EmprestimoClienteExists(emprestimoModel))
             {
                 _context.Add(emprestimoModel);
+                
                 await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             ViewData["ClienteId"] = new SelectList(_context.Clientes, "Id", "Nome", emprestimoModel.ClienteId);
             ViewData["LivroId"] = new SelectList(_context.Livros, "Id", "Nome", emprestimoModel.LivroId);
-            return View(emprestimoModel);
+
+            //return Json("emprestimo existente");
+            return View(emprestimoExistente);
+        }
+        [NonAction]
+        public bool EmprestimoClienteExists(EmprestimoModel emprestimoModel)
+        {
+            var cliente = _context.Clientes.Find(emprestimoModel.ClienteId);
+            //var emprestimo = _context.Emprestimos.Find(cliente.Id);
+            var emprestimo = _context.Emprestimos.OrderByDescending(p => p.Devolucao);
+            var emprestimoVerificar = emprestimo.Where(p => p.ClienteId == cliente.Id);
+            if (emprestimoVerificar == null)
+            {
+                return false;
+            }
+            else if (emprestimoVerificar.FirstOrDefault(m => m.Devolucao == null) == null)
+            {
+                return false;
+            }
+            return true;
         }
 
         // GET: EmprestimoModels/Edit/5
@@ -87,7 +125,26 @@ namespace CRUD_ORM.Controllers
             }
             ViewData["ClienteId"] = new SelectList(_context.Clientes, "Id", "Nome", emprestimoModel.ClienteId);
             ViewData["LivroId"] = new SelectList(_context.Livros, "Id", "Nome", emprestimoModel.LivroId);
+           
             return View(emprestimoModel);
+        }
+        public async Task<IActionResult> Devolver(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var emprestimoModel = await _context.Emprestimos.FindAsync(id);
+            if (emprestimoModel == null)
+            {
+                return NotFound();
+            }
+            emprestimoModel.Devolucao = DateTime.Now;
+            _context.Update(emprestimoModel);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: EmprestimoModels/Edit/5

@@ -14,7 +14,6 @@ namespace xUnitBibliotecaTest
         {
             var db = new DbContextOptionsBuilder<ClienteContext>().UseSqlServer("Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=LivrariaApp;Data Source=DESKTOP-0GGDBVO\\SQLEXPRESS");
             _context = new ClienteContext(db.Options);
-            
 
         }
         [Fact]

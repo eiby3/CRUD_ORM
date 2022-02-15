@@ -24,5 +24,7 @@ namespace CRUD_ORM.Data
             .Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("Connection"));
         }
+
+        
     }
 }
