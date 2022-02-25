@@ -23,7 +23,7 @@ namespace CRUD_ORM.Data
             .AddJsonFile("appsettings.json", false, true)
             .Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("Connection"));
-        }
+        }        
 
         
     }

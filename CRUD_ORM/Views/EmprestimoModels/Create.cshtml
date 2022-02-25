@@ -30,26 +30,22 @@
                 <input asp-for="PrevisaoDevolucao" class="form-control" />
                 <span asp-validation-for="PrevisaoDevolucao" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group" hidden>
                 <label asp-for="Devolucao" class="control-label"></label>
                 <input asp-for="Devolucao" class="form-control" />
                 <span asp-validation-for="Devolucao" class="text-danger"></span>
             </div>
-            <div class="form-group" hidden>
-                <label asp-for="EmprestimoExiste" class="control-label"></label>
-                <input asp-for="EmprestimoExiste" class="form-control" required="Cliente possui emprestimo" />
-                <span asp-validation-for="EmprestimoExiste" class="text-danger"></span>
-            </div>
+
             <div class="form-group">
                 <input id="verificarEmprestimo" type="submit" value="Create" class="btn btn-primary" />
             </div>
-            @if (Model.EmprestimoExiste == true)
+            @*if (Model.EmprestimoExiste == true)
             {
                 <script type="text/javascript">
                     window.onload = function () {
                 alert("Cliente possui emprestimo aberto");};
                 </script>
-            }    
+            }*@
         </form>
 
     </div>

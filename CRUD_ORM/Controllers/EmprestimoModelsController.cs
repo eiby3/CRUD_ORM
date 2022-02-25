@@ -26,6 +26,7 @@ namespace CRUD_ORM.Controllers
             return View(await clienteContext.ToListAsync());
         }
 
+
         // GET: EmprestimoModels/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -51,7 +52,8 @@ namespace CRUD_ORM.Controllers
         {
             EmprestimoExistente emprestimoExistente = new EmprestimoExistente()
             {
-                Emprestado = DateTime.Now
+                Emprestado = DateTime.Now,
+                PrevisaoDevolucao = DateTime.Now.AddDays(5)
             };
             ViewData["ClienteId"] = new SelectList(_context.Clientes, "Id", "Nome");
             ViewData["LivroId"] = new SelectList(_context.Livros, "Id", "Nome");
@@ -77,7 +79,7 @@ namespace CRUD_ORM.Controllers
                 PrevisaoDevolucao = emprestimoModel.PrevisaoDevolucao,
                 EmprestimoExiste = EmprestimoClienteExists(emprestimoModel)
             };
-            var teste = emprestimoExistente;
+            
             if (ModelState.IsValid && !EmprestimoClienteExists(emprestimoModel))
             {
                 _context.Add(emprestimoModel);
@@ -90,7 +92,8 @@ namespace CRUD_ORM.Controllers
             ViewData["LivroId"] = new SelectList(_context.Livros, "Id", "Nome", emprestimoModel.LivroId);
 
             //return Json("emprestimo existente");
-            return View(emprestimoExistente);
+            //return View(emprestimoExistente);            
+            return RedirectToAction(nameof(Devolver), emprestimoModel);
         }
         [NonAction]
         public bool EmprestimoClienteExists(EmprestimoModel emprestimoModel)
@@ -128,23 +131,15 @@ namespace CRUD_ORM.Controllers
            
             return View(emprestimoModel);
         }
-        public async Task<IActionResult> Devolver(int? id)
+        public IActionResult Devolver(EmprestimoModel emprestimoModel)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var cliente = _context.Clientes.Find(emprestimoModel.ClienteId);
+            //var emprestimo = _context.Emprestimos.Find(cliente.Id);
+            var emprestimo = _context.Emprestimos.OrderByDescending(p => p.Devolucao);
+            var emprestimoVerificar = emprestimo.Where(p => p.ClienteId == cliente.Id);
+            var emprestimoSemDevolucao = emprestimoVerificar.FirstOrDefault(x => x.Devolucao == null);
 
-            var emprestimoModel = await _context.Emprestimos.FindAsync(id);
-            if (emprestimoModel == null)
-            {
-                return NotFound();
-            }
-            emprestimoModel.Devolucao = DateTime.Now;
-            _context.Update(emprestimoModel);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
+            return View(emprestimoSemDevolucao);
         }
 
         // POST: EmprestimoModels/Edit/5
