@@ -3,6 +3,3 @@
 
 // Write your JavaScript code.
 
-if () {
-
-}

@@ -34,7 +34,7 @@ namespace EmprestimosTests
         [Test]
         public void emprestimoRecusado()
         {
-            driver.Navigate().GoToUrl("https://localhost:44306/EmprestimoModels/Create");
+            driver.Navigate().GoToUrl("https://localhost:44315/EmprestimoModels/Create");
             driver.Manage().Window.Size = new System.Drawing.Size(834, 590);
             driver.FindElement(By.Id("LivroId")).Click();
             driver.FindElement(By.Id("ClienteId")).Click();

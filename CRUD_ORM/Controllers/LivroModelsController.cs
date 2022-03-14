@@ -9,6 +9,8 @@ using CRUD_ORM.Data;
 using CRUD_ORM.Models;
 using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
+using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace CRUD_ORM.Controllers
 {
@@ -16,20 +18,26 @@ namespace CRUD_ORM.Controllers
     {
         private readonly ClienteContext _context;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<LivroModelsController> _logger;
 
-
-        public LivroModelsController(ClienteContext context)
+        public LivroModelsController(ClienteContext context, ILogger<LivroModelsController> logger)
         {
+            _logger = logger;
+            _logger.LogInformation("Instanciando ILogger no construtor");
             _context = context;
+            
         }
 
         // GET: LivroModels
         public async Task<IActionResult> Index()
         {
+
             var clienteContext = _context.Livros.Include(l => l.Categoria);
             LivroModel livro = _context.Livros.Include(c => c.Categoria).First();
+            _logger.LogTrace("TESTANDO");
             return View(await clienteContext.ToListAsync());
-            
+
+
         }
 
         // GET: LivroModels/Details/5
@@ -69,8 +77,8 @@ namespace CRUD_ORM.Controllers
             {
                 _context.Add(livroModel);
                 await _context.SaveChangesAsync();
-               
-               
+
+
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Nome", livroModel.CategoriaId);
@@ -85,7 +93,7 @@ namespace CRUD_ORM.Controllers
                 return NotFound();
             }
 
-            var livroModel = await _context.Livros.FindAsync(id);            
+            var livroModel = await _context.Livros.FindAsync(id);
             if (livroModel == null)
             {
                 return NotFound();
@@ -94,9 +102,9 @@ namespace CRUD_ORM.Controllers
             livroModel = await _context.Livros
                 .Include(l => l.Categoria)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            livroAntigo.Categoria.Nome =  livroModel.Categoria.Nome;
-            
-            
+            livroAntigo.Categoria.Nome = livroModel.Categoria.Nome;
+
+
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Nome", livroModel.CategoriaId);
             return View(livroModel);
         }
@@ -120,8 +128,8 @@ namespace CRUD_ORM.Controllers
                     _context.Update(livroModel);
                     await _context.SaveChangesAsync();
 
-                    
-                   
+
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -169,7 +177,7 @@ namespace CRUD_ORM.Controllers
             _context.Livros.Remove(livroModel);
             await _context.SaveChangesAsync();
 
-           
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -177,7 +185,7 @@ namespace CRUD_ORM.Controllers
         {
             return _context.Livros.Any(e => e.Id == id);
         }
-        
+
 
     }
 }
