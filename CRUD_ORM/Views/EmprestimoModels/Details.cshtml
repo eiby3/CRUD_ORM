@@ -1,5 +1,4 @@
 ﻿@model CRUD_ORM.Models.EmprestimoModel
-
 @{
     ViewData["Title"] = "Details";
 }
@@ -14,13 +13,13 @@
             @Html.DisplayNameFor(model => model.Livro)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Livro.Id)
+            @Html.DisplayFor(model => model.Livro.Nome)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Cliente)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Cliente.Id)
+            @Html.DisplayFor(model => model.Cliente.Nome)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Emprestado)
@@ -43,6 +42,19 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>    
     <a asp-action="Index">Back to List</a>
+</div>
+<div>                    
+   <a class="btn btn-primary mb-3" onclick="downloadMaterial(this)" name=@Html.DisplayFor(modelItem => modelItem.ClienteId)>Dowload<span class="glyphicon glyphicon-download-alt"></span></a><br />
+   <a asp-action="ExportarXML" asp-route-id="@Model.Id">XML</a> 
+   <a asp-action="ExportarCSV" asp-route-id="@Model.Id">CSV</a>
+<script>
+    function downloadMaterial(e){
+      var path = e.name;
+      var id = @Model.Id;
+      window.open("/EmprestimoModels/DownloadXML/"+id)
+    }
+</script>   
+    
 </div>

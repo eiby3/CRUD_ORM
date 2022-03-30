@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CRUD_ORM.Data;
 using CRUD_ORM.Models;
+using System.IO;
+using System.Xml.Serialization;
+using CRUD_ORM.ClassesEstaticas;
 
 namespace CRUD_ORM.Controllers
 {
@@ -20,6 +23,7 @@ namespace CRUD_ORM.Controllers
         }
 
         // GET: EmprestimoModels
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var clienteContext = _context.Emprestimos.Include(e => e.Cliente).Include(e => e.Livro);
@@ -114,6 +118,7 @@ namespace CRUD_ORM.Controllers
         }
 
         // GET: EmprestimoModels/Edit/5
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -140,6 +145,22 @@ namespace CRUD_ORM.Controllers
             var emprestimoSemDevolucao = emprestimoVerificar.FirstOrDefault(x => x.Devolucao == null);
 
             return View(emprestimoSemDevolucao);
+        }
+        public async Task<IActionResult> DevolverLivro(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var emprestimo = GetEmprestimo(id);
+            if (emprestimo == null)
+            {
+                return NotFound();
+            }
+            emprestimo.Devolucao = DateTime.Now.Date;
+            _context.Update(emprestimo);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: EmprestimoModels/Edit/5
@@ -214,5 +235,90 @@ namespace CRUD_ORM.Controllers
         {
             return _context.Emprestimos.Any(e => e.Id == id);
         }
+        public IActionResult DownloadXML(int? id)
+        {
+            var arquivo = GetEmprestimo(id);
+            var nomeTxt = $"{arquivo.Id.ToString()}.xml";
+            var path = Path.Combine(
+                           Directory.GetCurrentDirectory(),
+                           "wwwroot", "xml", nomeTxt);
+
+            using (StreamWriter writer = new StreamWriter(path))
+            {
+                writer.WriteLine(ToXML(arquivo));
+            }
+            if (arquivo == null)
+                return Content("filename not present");
+
+
+            FileStream fileStream;
+            try
+            {
+                fileStream = System.IO.File.OpenRead(path);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new EmptyResult();
+            }
+
+            return File(fileStream, "text/xml", nomeTxt);
+        }
+        private EmprestimoModel GetEmprestimo(int? id)
+        {
+            if (id == null)
+            {
+                return null;
+            }
+
+            var emprestimo =  _context.Emprestimos
+                .Include(e => e.Cliente)
+                .Include(e => e.Livro)
+                .FirstOrDefault(m => m.Id == id);
+            if (emprestimo == null)
+            {
+                return null;
+            }
+            return emprestimo;
+        }
+
+        private string ToXML<T>(T dataToSerialize)
+        {
+            using (var stringwriter = new StringWriter())
+            {
+                var serializer = new XmlSerializer(typeof(T));
+                serializer.Serialize(stringwriter, dataToSerialize);
+                return stringwriter.ToString();
+            }
+        }
+        private string ToCSV(EmprestimoEstatica dataToSerialize)
+        {
+            var path = Path.Combine(
+                          Directory.GetCurrentDirectory(),
+                          "wwwroot", "csv", "emprestimo.csv");
+            System.IO.File.WriteAllText(path, (string)dataToSerialize);
+            return (string)dataToSerialize;
+        }
+        public IActionResult ExportarXML(int? id)
+        {
+            return Content(ToXML(GetEmprestimo(id)));
+        }
+        public IActionResult ExportarCSV(int? id)
+        {
+            EmprestimoModel emprestimoModel = GetEmprestimo(id);
+            EmprestimoEstatica emprestimoEstatica = new EmprestimoEstatica()
+            {
+                Id = emprestimoModel.Id,
+                Cliente = emprestimoModel.Cliente,
+                ClienteId = emprestimoModel.ClienteId,
+                Devolucao = emprestimoModel.Devolucao,
+                Emprestado = emprestimoModel.Emprestado,
+                Livro = emprestimoModel.Livro,
+                LivroId = emprestimoModel.LivroId,
+                PrevisaoDevolucao = emprestimoModel.PrevisaoDevolucao,
+                
+            };
+            return Content(ToCSV(emprestimoEstatica));
+        }
+
     }
 }

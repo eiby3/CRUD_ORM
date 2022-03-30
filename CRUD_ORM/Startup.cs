@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,10 @@ namespace CRUD_ORM
         {
             
             
-            services.AddControllersWithViews();
+            services.AddControllersWithViews(setupAction =>
+            {
+                setupAction.ReturnHttpNotAcceptable = true;
+            }).AddXmlDataContractSerializerFormatters();
             services.AddDbContext<ClienteContext>(option => option.UseSqlServer(Configuration.GetConnectionString("Connection")));
             services.Configure<BibliotecaMongoSettings>(Configuration.GetSection("MongoConnection"));
             services.AddSingleton<IBibliotecaMongoSettings>(sp =>
@@ -55,6 +59,8 @@ namespace CRUD_ORM
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            //app.UseSerilogRequestLogging();
 
             app.UseRouting();
 

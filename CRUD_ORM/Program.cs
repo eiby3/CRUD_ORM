@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
 using Serilog;
 using Serilog.Events;
 using System;
@@ -15,26 +16,27 @@ namespace CRUD_ORM
     {
         public static void Main(string[] args)
         {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
 
             Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-            .Enrich.FromLogContext()
-            .WriteTo.File("D:\\logs.txt")
-            .CreateLogger();
-
+                .ReadFrom.Configuration(configuration)
+                .CreateLogger();
             try
-            {
-                Log.Information("MVC iniciando");
+            {                
+                Log.Information("Aplicacao iniciou!");
                 CreateHostBuilder(args).Build().Run();
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "A aplicacao falhou.");                
+                Log.Fatal(ex, "Aplicacao falhou ao iniciar...");
             }
             finally
             {
                 Log.CloseAndFlush();
             }
+                
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

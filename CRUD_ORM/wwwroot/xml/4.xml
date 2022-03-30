@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-16"?>
+<EmprestimoModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Id>4</Id>
+  <LivroId>1</LivroId>
+  <Livro>
+    <Id>1</Id>
+    <Nome>Harry Potter</Nome>
+    <CategoriaId>5</CategoriaId>
+    <Autor>J. K. Rowling</Autor>
+    <Ativo>true</Ativo>
+  </Livro>
+  <ClienteId>3</ClienteId>
+  <Cliente>
+    <Id>3</Id>
+    <Nome>teste</Nome>
+    <Nascimento>2003-04-02T00:00:00</Nascimento>
+    <Cadastro>2022-01-24T00:00:00</Cadastro>
+    <Ativo>true</Ativo>
+  </Cliente>
+  <Emprestado>2022-03-29T00:00:00</Emprestado>
+  <PrevisaoDevolucao>2022-04-03T00:00:00</PrevisaoDevolucao>
+  <Devolucao xsi:nil="true" />
+</EmprestimoModel>

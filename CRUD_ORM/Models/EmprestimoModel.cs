@@ -16,5 +16,6 @@ namespace CRUD_ORM.Models
         public DateTime PrevisaoDevolucao { get; set; }
         [DataType(DataType.Date)]
         public DateTime? Devolucao { get; set; }
+        
     }
 }
