@@ -46,15 +46,26 @@
     <a asp-action="Index">Back to List</a>
 </div>
 <div>                    
-   <a class="btn btn-primary mb-3" onclick="downloadMaterial(this)" name=@Html.DisplayFor(modelItem => modelItem.ClienteId)>Dowload<span class="glyphicon glyphicon-download-alt"></span></a><br />
-   <a asp-action="ExportarXML" asp-route-id="@Model.Id">XML</a> 
-   <a asp-action="ExportarCSV" asp-route-id="@Model.Id">CSV</a>
+   <a class="btn btn-primary mb-3" onclick="downloadMaterialXML(this)" name=@Html.DisplayFor(modelItem => modelItem.ClienteId)>XML<span class="glyphicon glyphicon-download-alt"></span></a><br />
+   <a class="btn btn-primary mb-3" onclick="downloadMaterialCSV(this)" name=@Html.DisplayFor(modelItem => modelItem.ClienteId)>CSV<span class="glyphicon glyphicon-download-alt"></span></a><br />
+   
 <script>
-    function downloadMaterial(e){
+    function downloadMaterialXML(e){
       var path = e.name;
       var id = @Model.Id;
       window.open("/EmprestimoModels/DownloadXML/"+id)
     }
-</script>   
+</script>
+<script>
+    function downloadMaterialCSV(e){
+      var path = e.name;
+      var id = @Model.Id;
+      window.open("/EmprestimoModels/DownloadCSV/"+id)
+    }
+</script> 
     
+</div>
+<div>
+    <a asp-action="ExportarXML" asp-route-id="@Model.Id">XML</a> 
+   <a asp-action="ExportarCSV" asp-route-id="@Model.Id">CSV</a>
 </div>

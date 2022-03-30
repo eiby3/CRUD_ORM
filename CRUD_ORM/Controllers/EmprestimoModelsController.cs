@@ -10,6 +10,10 @@ using CRUD_ORM.Models;
 using System.IO;
 using System.Xml.Serialization;
 using CRUD_ORM.ClassesEstaticas;
+using System.Text;
+using System.Data;
+using System.ComponentModel;
+using ServiceStack;
 
 namespace CRUD_ORM.Controllers
 {
@@ -261,7 +265,34 @@ namespace CRUD_ORM.Controllers
                 return new EmptyResult();
             }
 
-            return File(fileStream, "text/xml", nomeTxt);
+            return File(fileStream, "text/csv", nomeTxt);
+        }
+        public IActionResult DownloadCSV(int? id)
+        {
+            var arquivo = GetEmprestimo(id);
+            var nomeTxt = $"{arquivo.Id.ToString()}.csv";
+            var path = Path.Combine(
+                           Directory.GetCurrentDirectory(),
+                           "wwwroot", "csv", nomeTxt);
+            using (StreamWriter writer = new StreamWriter(path))
+            {
+                writer.WriteLine(ToCSV(arquivo));
+            }
+            if (arquivo == null)
+                return Content("filename not present");
+
+
+            FileStream fileStream;
+            try
+            {
+                fileStream = System.IO.File.OpenRead(path);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new EmptyResult();
+            }
+
+            return File(fileStream, "text/csv", nomeTxt);
         }
         private EmprestimoModel GetEmprestimo(int? id)
         {
@@ -281,22 +312,13 @@ namespace CRUD_ORM.Controllers
             return emprestimo;
         }
 
-        private string ToXML<T>(T dataToSerialize)
+        private string ToXML(EmprestimoModel emprestimoModel)
         {
-            using (var stringwriter = new StringWriter())
-            {
-                var serializer = new XmlSerializer(typeof(T));
-                serializer.Serialize(stringwriter, dataToSerialize);
-                return stringwriter.ToString();
-            }
+            return emprestimoModel.ToXml();
         }
-        private string ToCSV(EmprestimoEstatica dataToSerialize)
+        private string ToCSV(EmprestimoModel emprestimoModel)
         {
-            var path = Path.Combine(
-                          Directory.GetCurrentDirectory(),
-                          "wwwroot", "csv", "emprestimo.csv");
-            System.IO.File.WriteAllText(path, (string)dataToSerialize);
-            return (string)dataToSerialize;
+            return emprestimoModel.ToCsv();
         }
         public IActionResult ExportarXML(int? id)
         {
@@ -304,21 +326,9 @@ namespace CRUD_ORM.Controllers
         }
         public IActionResult ExportarCSV(int? id)
         {
-            EmprestimoModel emprestimoModel = GetEmprestimo(id);
-            EmprestimoEstatica emprestimoEstatica = new EmprestimoEstatica()
-            {
-                Id = emprestimoModel.Id,
-                Cliente = emprestimoModel.Cliente,
-                ClienteId = emprestimoModel.ClienteId,
-                Devolucao = emprestimoModel.Devolucao,
-                Emprestado = emprestimoModel.Emprestado,
-                Livro = emprestimoModel.Livro,
-                LivroId = emprestimoModel.LivroId,
-                PrevisaoDevolucao = emprestimoModel.PrevisaoDevolucao,
-                
-            };
-            return Content(ToCSV(emprestimoEstatica));
+            return Content(ToCSV(GetEmprestimo(id)));
         }
+       
 
     }
 }
