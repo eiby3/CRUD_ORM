@@ -1,0 +1,3 @@
+Id,LivroId,Livro,ClienteId,Cliente,Emprestado,PrevisaoDevolucao,Devolucao
+5,1,"{Id:1,Nome:Harry Potter,CategoriaId:5,Autor:J. K. Rowling,Ativo:True}",3,"{Id:3,Nome:teste,Nascimento:2003-04-02,Cadastro:2022-01-24,Ativo:True}",2022-03-29,2022-04-03,2022-03-29
+

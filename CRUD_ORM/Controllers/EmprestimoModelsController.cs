@@ -308,7 +308,9 @@ namespace CRUD_ORM.Controllers
             if (emprestimo == null)
             {
                 return null;
-            }
+            }string teste = "teste";
+            
+            
             return emprestimo;
         }
 
