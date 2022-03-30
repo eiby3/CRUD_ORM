@@ -9,7 +9,6 @@ using CRUD_ORM.Data;
 using CRUD_ORM.Models;
 using System.IO;
 using System.Xml.Serialization;
-using CRUD_ORM.ClassesEstaticas;
 using System.Text;
 using System.Data;
 using System.ComponentModel;
@@ -308,7 +307,7 @@ namespace CRUD_ORM.Controllers
             if (emprestimo == null)
             {
                 return null;
-            }string teste = "teste";
+            }
             
             
             return emprestimo;

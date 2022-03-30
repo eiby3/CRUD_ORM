@@ -9,6 +9,7 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
 <table class="table">
     <thead>
         <tr>
@@ -48,6 +49,17 @@
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
             </td>
         </tr>
-}
+}       
     </tbody>
 </table>
+<form method = "post" enctype="multipart/form-data" asp-controller = "LivroModels" asp-action="UploadFiles">
+    <div>
+        <p>Carregar lote de livros</p>
+        <input type="file" name = "files"/>
+        
+    </div>
+    <div>
+        <input type="submit" value = "Enviar" />
+    </div>
+    
+</form>

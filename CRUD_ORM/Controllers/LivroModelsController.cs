@@ -11,6 +11,13 @@ using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using Microsoft.Extensions.Logging;
+using ServiceStack;
+using System.IO;
+using CsvHelper;
+using System.Globalization;
+using System.Data.SqlClient;
+using Dapper;
+using Microsoft.AspNetCore.Http;
 
 namespace CRUD_ORM.Controllers
 {
@@ -21,16 +28,16 @@ namespace CRUD_ORM.Controllers
 
         public LivroModelsController(ClienteContext context, ILogger<LivroModelsController> logger)
         {
-            _logger = logger;           
+            _logger = logger;
             _context = context;
-             
+
         }
 
         // GET: LivroModels
         public async Task<IActionResult> Index()
         {
             _logger.LogTrace("Entrando na index");
-           
+
             var clienteContext = _context.Livros.Include(l => l.Categoria);
             LivroModel livro = _context.Livros.Include(c => c.Categoria).First();
 
@@ -87,7 +94,7 @@ namespace CRUD_ORM.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Nome", livroModel.CategoriaId);
-            
+
             return View(livroModel);
         }
 
@@ -154,7 +161,7 @@ namespace CRUD_ORM.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Id", livroModel.CategoriaId);
-            
+
             return View(livroModel);
         }
 
@@ -197,6 +204,71 @@ namespace CRUD_ORM.Controllers
         {
             _logger.LogTrace($"Verificando se o livro com id:{id} existe");
             return _context.Livros.Any(e => e.Id == id);
+        }
+        public IActionResult ExportarCSV(int? id)
+        {
+            return Content(ToCSV(GetLivro(id)));
+        }
+        private string ToCSV(LivroModel livro)
+        {
+            
+            return livro.ToCsv();
+        }
+        private LivroModel GetLivro(int? id)
+        {
+            if (id == null)
+            {
+                return null;
+            }
+
+            var livroModel = _context.Livros
+                .Include(l => l.Categoria)
+                .FirstOrDefault(m => m.Id == id);
+            if (livroModel == null)
+            {
+                return null;
+            }
+
+
+            return livroModel;
+        }
+        private void Importer(string path)
+        {
+            using (var reader = new StreamReader(path))
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            {
+                 var records = csv.GetRecords<LivroModel>();
+                
+                List<LivroModel> livros = records.ToList();
+                livros.ForEach(livro =>
+                 {
+                     var categoriaModel = _context.Categorias.Find(livro.CategoriaId);
+                     livro.Categoria = categoriaModel;
+                 });
+                _context.Livros.AddRange(livros);
+                _context.SaveChanges();
+            }
+        }
+        [HttpPost("FileUpload")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadFiles(List<IFormFile> files)
+        {
+            var size = files.Sum(f => f.Length);
+            var filePaths = new List<string>();
+            foreach (var formFile in files)
+            {
+                if (formFile.Length > 0)
+                {
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "UploadFiles", formFile.FileName);
+                    filePaths.Add(filePath);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await formFile.CopyToAsync(stream);
+                    }
+                }
+            }
+            Importer(filePaths[0]);
+            return RedirectToAction(nameof(Index));
         }
 
 
