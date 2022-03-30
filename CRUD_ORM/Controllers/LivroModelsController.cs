@@ -17,6 +17,7 @@ using CsvHelper;
 using System.Globalization;
 using System.Data.SqlClient;
 using Dapper;
+using Microsoft.AspNetCore.Http;
 
 namespace CRUD_ORM.Controllers
 {
@@ -210,7 +211,7 @@ namespace CRUD_ORM.Controllers
         }
         private string ToCSV(LivroModel livro)
         {
-            Importer();
+            
             return livro.ToCsv();
         }
         private LivroModel GetLivro(int? id)
@@ -231,9 +232,9 @@ namespace CRUD_ORM.Controllers
 
             return livroModel;
         }
-        private void Importer()
+        private void Importer(string path)
         {
-            using (var reader = new StreamReader(@"D:\livros1.csv"))
+            using (var reader = new StreamReader(path))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                  var records = csv.GetRecords<LivroModel>();
@@ -248,6 +249,28 @@ namespace CRUD_ORM.Controllers
                 _context.SaveChanges();
             }
         }
+        [HttpPost("FileUpload")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadFiles(List<IFormFile> files)
+        {
+            var size = files.Sum(f => f.Length);
+            var filePaths = new List<string>();
+            foreach (var formFile in files)
+            {
+                if (formFile.Length > 0)
+                {
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "UploadFiles", formFile.FileName);
+                    filePaths.Add(filePath);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await formFile.CopyToAsync(stream);
+                    }
+                }
+            }
+            Importer(filePaths[0]);
+            return RedirectToAction(nameof(Index));
+        }
+
 
     }
 }
