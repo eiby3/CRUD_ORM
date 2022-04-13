@@ -39,7 +39,7 @@ namespace CRUD_ORM.Controllers
             _logger.LogTrace("Entrando na index");
 
             var clienteContext = _context.Livros.Include(l => l.Categoria);
-            LivroModel livro = _context.Livros.Include(c => c.Categoria).First();
+            //LivroModel livro = await _context.Livros.Include(c => c.Categoria).FirstOrDefaultAsync();
 
             _logger.LogInformation("Recuperando livros do bd e listando...");
             return View(await clienteContext.ToListAsync());
@@ -211,7 +211,7 @@ namespace CRUD_ORM.Controllers
         }
         private string ToCSV(LivroModel livro)
         {
-            
+
             return livro.ToCsv();
         }
         private LivroModel GetLivro(int? id)
@@ -232,13 +232,13 @@ namespace CRUD_ORM.Controllers
 
             return livroModel;
         }
-        private void Importer(string path)
+        private void Importer(string csvString)
         {
-            using (var reader = new StreamReader(path))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            //using (var reader = new StreamReader(path))
+            using (var csv = new CsvReader(new StringReader(csvString), CultureInfo.InvariantCulture))
             {
-                 var records = csv.GetRecords<LivroModel>();
-                
+                var records = csv.GetRecords<LivroModel>();
+
                 List<LivroModel> livros = records.ToList();
                 livros.ForEach(livro =>
                  {
@@ -249,25 +249,11 @@ namespace CRUD_ORM.Controllers
                 _context.SaveChanges();
             }
         }
-        [HttpPost("FileUpload")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadFiles(List<IFormFile> files)
+        public IActionResult UploadFiles(string csv)
         {
-            var size = files.Sum(f => f.Length);
-            var filePaths = new List<string>();
-            foreach (var formFile in files)
-            {
-                if (formFile.Length > 0)
-                {
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "UploadFiles", formFile.FileName);
-                    filePaths.Add(filePath);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await formFile.CopyToAsync(stream);
-                    }
-                }
-            }
-            Importer(filePaths[0]);
+            Importer(csv);
             return RedirectToAction(nameof(Index));
         }
 
